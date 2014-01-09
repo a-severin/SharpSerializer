@@ -1,12 +1,14 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
-using System.Xml;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Drawing;
-using Serialization;
+using System.IO;
+using System.Linq;
+using System.Xml;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 
-namespace Polenter.Serialization
+namespace Serialization
 {
     /// <summary>
     ///   All labeled with that Attribute object properties are ignored during the serialization. 
@@ -30,20 +32,20 @@ namespace Polenter.Serialization
 
             public string NameRule { get; set; }
 
-            [Polenter.Serialization.ExcludeFromSerialization]
+            [ExcludeFromSerialization]
             public string NameSystemAttribute { get; set; }
 
-            [MyExcludeAttribute]
+            [MyExclude]
             public string NamePrivateAttribute { get; set; }
 
             public virtual Class2BeSerialized Complex { get; set; }
 
             public virtual Class2BeSerialized ComplexRule { get; set; }
 
-            [Polenter.Serialization.ExcludeFromSerialization]
+            [ExcludeFromSerialization]
             public virtual Class2BeSerialized ComplexSystemAttribute { get; set; }
 
-            [MyExcludeAttribute]
+            [MyExclude]
             public virtual Class2BeSerialized ComplexPrivateAttribute { get; set; }
         }
 
@@ -68,7 +70,7 @@ namespace Polenter.Serialization
             };
 
             /*
-<Complex name="Root" type="Polenter.Serialization.IgnoredAttributeTests+Class2BeSerialized, SharpSerializer.Tests">
+<Complex name="Root" type="Serialization.IgnoredAttributeTests+Class2BeSerialized, SharpSerializer.Tests">
   <Properties>
     <Simple name="Name" value="MyName" />
     <Complex name="Complex">
@@ -156,7 +158,7 @@ namespace Polenter.Serialization
             serializer.Serialize(child, stream);
 
             /*
-                <Complex name="Root" type="Polenter.Serialization.XmlSerialisationTests+ParentChildTestClass, SharpSerializer.Tests">
+                <Complex name="Root" type="Serialization.XmlSerialisationTests+ParentChildTestClass, SharpSerializer.Tests">
 	                <Properties>
 		                <Simple name="Name" value="child" />
 		                <Complex name="Mother" id="1">
@@ -220,60 +222,6 @@ namespace Polenter.Serialization
             Assert.AreEqual(parent.Guid, loaded.Guid, "same guid");
         }
 
-        [TestMethod]
-        public void BinSerial_ShouldSerializeGuid()
-        {
-            var parent = new ClassWithGuid()
-            {
-                Guid = Guid.NewGuid(),
-            };
-
-            var stream = new MemoryStream();
-            var settings = new SharpSerializerBinarySettings(BinarySerializationMode.SizeOptimized);
-            var serializer = new SharpSerializer(settings);
-
-            serializer.Serialize(parent, stream);
-
-
-            serializer = new SharpSerializer(settings);
-            stream.Position = 0;
-            ClassWithGuid loaded = serializer.Deserialize(stream) as ClassWithGuid;
-
-            Assert.AreEqual(parent.Guid, loaded.Guid, "same guid");
-        }
-        #endregion
-
-
-        #region BinSerial
-        [TestMethod]
-        public void BinSerial_TwoIdenticalChildsShouldBeSameInstance()
-        {
-            var parent = new ParentChildTestClass()
-            {
-                Name = "parent",
-            };
-
-            var child = new ParentChildTestClass()
-            {
-                Name = "child",
-                Father = parent,
-                Mother = parent,
-            };
-
-            Assert.AreSame(child.Father, child.Mother, "Precondition: Saved Father and Mother are same instance");
-
-            var stream = new MemoryStream();
-            var settings = new SharpSerializerBinarySettings(BinarySerializationMode.SizeOptimized);
-            var serializer = new SharpSerializer(settings);
-
-            serializer.Serialize(child, stream);
-
-            serializer = new SharpSerializer(settings);
-            stream.Position = 0;
-            ParentChildTestClass loaded = serializer.Deserialize(stream) as ParentChildTestClass;
-
-            Assert.AreSame(loaded.Father, loaded.Mother, "Loaded Father and Mother are same instance");
-        }
         #endregion
 
 

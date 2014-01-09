@@ -1,9 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Polenter.Serialization.Advanced;
-using Polenter.Serialization.Core;
+using Serialization.Advanced;
+using Serialization.Core;
 
-namespace Polenter.Serialization.Serializing
+
+namespace Serialization.Serializing
 {
     /// <summary>
     /// Summary description for PropertyFactoryTests

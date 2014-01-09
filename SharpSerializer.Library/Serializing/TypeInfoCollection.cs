@@ -1,31 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.Contracts;
+using System.Linq;
 
-namespace Polenter.Serialization.Serializing
-{
-    ///<summary>
-    ///</summary>
-    public sealed class TypeInfoCollection : KeyedCollection<Type, TypeInfo>
-    {
-        /// <summary>
-        /// </summary>
-        /// <returns>null if the key was not found</returns>
-        public TypeInfo TryGetTypeInfo(Type type)
-        {
-            if (!Contains(type))
-            {
-                return null;
-            }
-            return this[type];
-        }
 
-        /// <summary>
-        /// </summary>
-        /// <param name = "item"></param>
-        /// <returns></returns>
-        protected override Type GetKeyForItem(TypeInfo item)
-        {
-            return item.Type;
-        }
-    }
+namespace Serialization.Serializing {
+	/// <summary>
+	/// </summary>
+	public sealed class TypeInfoCollection : KeyedCollection<Type, TypeInfo> {
+		/// <summary>
+		/// </summary>
+		/// <returns>null if the key was not found</returns>
+		public TypeInfo TryGetTypeInfo(Type type) {
+			if (!Contains(type)) {
+				return null;
+			}
+			return this[type];
+		}
+
+		/// <summary>
+		/// </summary>
+		/// <param name="item"></param>
+		/// <returns></returns>
+		protected override Type GetKeyForItem(TypeInfo item) {
+			return item.Type;
+		}
+	}
 }
