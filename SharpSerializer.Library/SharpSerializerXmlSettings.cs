@@ -26,11 +26,17 @@
 
 #endregion
 
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using Polenter.Serialization.Core;
 
-namespace Polenter.Serialization
+
+namespace Serialization
 {
     /// <summary>
     ///   All the most important settings for xml serialization

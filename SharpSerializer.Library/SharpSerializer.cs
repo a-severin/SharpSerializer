@@ -26,20 +26,24 @@
 
 #endregion
 
+
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using Polenter.Serialization.Advanced;
-using Polenter.Serialization.Advanced.Binary;
 using Polenter.Serialization.Advanced.Deserializing;
 using Polenter.Serialization.Advanced.Serializing;
 using Polenter.Serialization.Advanced.Xml;
 using Polenter.Serialization.Core;
 using Polenter.Serialization.Deserializing;
 using Polenter.Serialization.Serializing;
-using System.Runtime.CompilerServices;
 
-namespace Polenter.Serialization
+
+namespace Serialization
 {
     /// <summary>
     ///   This is the main class of SharpSerializer. It serializes and deserializes objects.
@@ -60,36 +64,10 @@ namespace Polenter.Serialization
         }
 
         /// <summary>
-        ///   Overloaded constructor
-        /// </summary>
-        /// <param name = "binarySerialization">true - binary serialization with SizeOptimized mode, false - xml. For more options use other overloaded constructors.</param>
-        public SharpSerializer(bool binarySerialization)
-        {
-            if (binarySerialization)
-            {
-                initialize(new SharpSerializerBinarySettings());
-            }
-            else
-            {
-                initialize(new SharpSerializerXmlSettings());
-            }
-        }
-
-        /// <summary>
         ///   Xml serialization with custom settings
         /// </summary>
         /// <param name = "settings"></param>
         public SharpSerializer(SharpSerializerXmlSettings settings)
-        {
-            if (settings == null) throw new ArgumentNullException("settings");
-            initialize(settings);
-        }
-
-        /// <summary>
-        ///   Binary serialization with custom settings
-        /// </summary>
-        /// <param name = "settings"></param>
-        public SharpSerializer(SharpSerializerBinarySettings settings)
         {
             if (settings == null) throw new ArgumentNullException("settings");
             initialize(settings);
@@ -110,7 +88,7 @@ namespace Polenter.Serialization
 
         /// <summary>
         ///   Default it is an instance of PropertyProvider. It provides all properties to serialize.
-        ///   You can use an Ihneritor and overwrite its GetAllProperties and IgnoreProperty methods to implement your custom rules.
+        ///   You can use an Inheritor and overwrite its GetAllProperties and IgnoreProperty methods to implement your custom rules.
         /// </summary>
         public PropertyProvider PropertyProvider
         {
@@ -162,43 +140,6 @@ namespace Polenter.Serialization
 
             _serializer = new XmlPropertySerializer(writer);
             _deserializer = new XmlPropertyDeserializer(reader);
-        }
-
-        private void initialize(SharpSerializerBinarySettings settings)
-        {
-            // PropertiesToIgnore
-            PropertyProvider.PropertiesToIgnore = settings.AdvancedSettings.PropertiesToIgnore;
-            PropertyProvider.AttributesToIgnore = settings.AdvancedSettings.AttributesToIgnore;
-
-            //RootName
-            RootName = settings.AdvancedSettings.RootName;
-
-            // TypeNameConverter)
-            ITypeNameConverter typeNameConverter = settings.AdvancedSettings.TypeNameConverter ??
-                                                   DefaultInitializer.GetTypeNameConverter(
-                                                       settings.IncludeAssemblyVersionInTypeName,
-                                                       settings.IncludeCultureInTypeName,
-                                                       settings.IncludePublicKeyTokenInTypeName);
-
-
-            // Create Serializer and Deserializer
-            Polenter.Serialization.Advanced.Binary.IBinaryReader reader = null;
-            Polenter.Serialization.Advanced.Binary.IBinaryWriter writer = null;
-            if (settings.Mode == BinarySerializationMode.Burst)
-            {
-                // Burst mode
-                writer = new BurstBinaryWriter(typeNameConverter, settings.Encoding);
-                reader = new BurstBinaryReader(typeNameConverter, settings.Encoding);
-            }
-            else
-            {
-                // Size optimized mode
-                writer = new SizeOptimizedBinaryWriter(typeNameConverter, settings.Encoding);
-                reader = new SizeOptimizedBinaryReader(typeNameConverter, settings.Encoding);
-            }
-
-            _deserializer = new BinaryPropertyDeserializer(reader);
-            _serializer = new BinaryPropertySerializer(writer);
         }
 
         #region Serializing/Deserializing methods

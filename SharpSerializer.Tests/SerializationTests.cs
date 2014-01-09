@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Xml;
 using System.Drawing;
+using Serialization;
+
 
 namespace Polenter.Serialization
 {

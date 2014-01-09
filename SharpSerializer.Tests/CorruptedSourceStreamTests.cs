@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Polenter.Serialization.Core;
+using Serialization;
+
 
 namespace Polenter.Serialization
 {
