@@ -321,12 +321,10 @@ namespace Serialization.Core
         ///</summary>
         public PropertyCollection Properties
         {
-            get
-            {
-                if (_properties == null) _properties = new PropertyCollection {Parent = this};
-                return _properties;
+            get {
+	            return _properties ?? (_properties = new PropertyCollection {Parent = this});
             }
-            set { _properties = value; }
+	        set { _properties = value; }
         }
 
 
@@ -337,12 +335,12 @@ namespace Serialization.Core
         public override void MakeFlatCopyFrom(ReferenceTargetProperty source)
         {
             var complexProperty = source as ComplexProperty;
-            if (complexProperty == null)
-                throw new InvalidCastException(
-                    string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
-                                  typeof(ComplexProperty), source.GetType()));
+			if (complexProperty == null)
+				throw new InvalidCastException(
+					string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
+								  typeof(ComplexProperty), source.GetType()));
 
-            base.MakeFlatCopyFrom(source);
+	        base.MakeFlatCopyFrom(source);
 
             Properties = complexProperty.Properties;
         }
@@ -377,12 +375,10 @@ namespace Serialization.Core
         ///</summary>
         public IList<Property> Items
         {
-            get
-            {
-                if (_items == null) _items = new List<Property>();
-                return _items;
+            get {
+	            return _items ?? (_items = new List<Property>());
             }
-            set { _items = value; }
+	        set { _items = value; }
         }
 
         /// <summary>
@@ -397,12 +393,12 @@ namespace Serialization.Core
         public override void MakeFlatCopyFrom(ReferenceTargetProperty source)
         {
             var collectionSource = source as CollectionProperty;
-            if (collectionSource == null)
-                throw new InvalidCastException(
-                    string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
-                                  typeof(CollectionProperty), source.GetType()));
+			if (collectionSource == null)
+				throw new InvalidCastException(
+					string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
+								  typeof(CollectionProperty), source.GetType()));
 
-            base.MakeFlatCopyFrom(source);
+	        base.MakeFlatCopyFrom(source);
 
             ElementType = collectionSource.ElementType;
             Items = collectionSource.Items;
@@ -439,12 +435,10 @@ namespace Serialization.Core
         ///</summary>
         public IList<KeyValueItem> Items
         {
-            get
-            {
-                if (_items == null) _items = new List<KeyValueItem>();
-                return _items;
+            get {
+	            return _items ?? (_items = new List<KeyValueItem>());
             }
-            set { _items = value; }
+	        set { _items = value; }
         }
 
         /// <summary>
@@ -464,12 +458,12 @@ namespace Serialization.Core
         public override void MakeFlatCopyFrom(ReferenceTargetProperty source)
         {
             var dictionarySource = source as DictionaryProperty;
-            if (dictionarySource == null)
-                throw new InvalidCastException(
-                    string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
-                                  typeof(DictionaryProperty), source.GetType()));
+			if (dictionarySource == null)
+				throw new InvalidCastException(
+					string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
+								  typeof(DictionaryProperty), source.GetType()));
 
-            base.MakeFlatCopyFrom(source);
+	        base.MakeFlatCopyFrom(source);
 
             KeyType = dictionarySource.KeyType;
             ValueType = dictionarySource.ValueType;
@@ -506,12 +500,10 @@ namespace Serialization.Core
         ///</summary>
         public PropertyCollection Items
         {
-            get
-            {
-                if (_items == null) _items = new PropertyCollection {Parent = this};
-                return _items;
+            get {
+	            return _items ?? (_items = new PropertyCollection {Parent = this});
             }
-            set { _items = value; }
+	        set { _items = value; }
         }
 
         /// <summary>
@@ -532,12 +524,12 @@ namespace Serialization.Core
         public override void MakeFlatCopyFrom(ReferenceTargetProperty source)
         {
             var arrayProp = source as SingleDimensionalArrayProperty;
-            if (arrayProp == null)
-                throw new InvalidCastException(
-                    string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
-                                  typeof(SingleDimensionalArrayProperty), source.GetType()));
+			if (arrayProp == null)
+				throw new InvalidCastException(
+					string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
+								  typeof(SingleDimensionalArrayProperty), source.GetType()));
 
-            base.MakeFlatCopyFrom(source);
+	        base.MakeFlatCopyFrom(source);
 
             LowerBound = arrayProp.LowerBound;
             ElementType = arrayProp.ElementType;
@@ -575,12 +567,10 @@ namespace Serialization.Core
         ///</summary>
         public IList<MultiDimensionalArrayItem> Items
         {
-            get
-            {
-                if (_items == null) _items = new List<MultiDimensionalArrayItem>();
-                return _items;
+            get {
+	            return _items ?? (_items = new List<MultiDimensionalArrayItem>());
             }
-            set { _items = value; }
+	        set { _items = value; }
         }
 
         /// <summary>
@@ -588,12 +578,10 @@ namespace Serialization.Core
         /// </summary>
         public IList<DimensionInfo> DimensionInfos
         {
-            get
-            {
-                if (_dimensionInfos == null) _dimensionInfos = new List<DimensionInfo>();
-                return _dimensionInfos;
+            get {
+	            return _dimensionInfos ?? (_dimensionInfos = new List<DimensionInfo>());
             }
-            set { _dimensionInfos = value; }
+	        set { _dimensionInfos = value; }
         }
 
         /// <summary>
@@ -608,12 +596,12 @@ namespace Serialization.Core
         public override void MakeFlatCopyFrom(ReferenceTargetProperty source)
         {
             var arrayProp = source as MultiDimensionalArrayProperty;
-            if (arrayProp == null)
-                throw new InvalidCastException(
-                    string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
-                                  typeof(SingleDimensionalArrayProperty), source.GetType()));
+			if (arrayProp == null)
+				throw new InvalidCastException(
+					string.Format("Invalid property type to make a flat copy. Expected {0}, current {1}",
+								  typeof(SingleDimensionalArrayProperty), source.GetType()));
 
-            base.MakeFlatCopyFrom(source);
+	        base.MakeFlatCopyFrom(source);
 
             ElementType = arrayProp.ElementType;
             DimensionInfos = arrayProp.DimensionInfos;

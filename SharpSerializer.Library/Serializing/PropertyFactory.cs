@@ -50,7 +50,7 @@ namespace Serialization.Serializing
             TypeInfo typeInfo = TypeInfo.GetTypeInfo(value);
 
             // Is it simple type
-            Property property = createSimpleProperty(name, typeInfo, value);
+            Property property = _createSimpleProperty(name, typeInfo, value);
             if (property != null)
             {
                 // It is simple type
@@ -58,7 +58,7 @@ namespace Serialization.Serializing
             }
 
             // From now it can only be an instance of ReferenceTargetProperty
-            ReferenceTargetProperty referenceTarget = createReferenceTargetInstance(name, typeInfo);
+            ReferenceTargetProperty referenceTarget = _createReferenceTargetInstance(name, typeInfo);
 
             // Search in Cache
             ReferenceTargetProperty cachedTarget;
@@ -75,16 +75,15 @@ namespace Serialization.Serializing
             // it must be created
 
             // Adding property to cache
-            referenceTarget.Reference = new ReferenceInfo();
-            referenceTarget.Reference.Id = _currentReferenceId++;
-            _propertyCache.Add(value, referenceTarget);
+            referenceTarget.Reference = new ReferenceInfo {Id = _currentReferenceId++};
+	        _propertyCache.Add(value, referenceTarget);
 
             // Parsing the property
-            var handled = fillSingleDimensionalArrayProperty(referenceTarget as SingleDimensionalArrayProperty, typeInfo, value);
-            handled = handled || fillMultiDimensionalArrayProperty(referenceTarget as MultiDimensionalArrayProperty, typeInfo, value);
-            handled = handled || fillDictionaryProperty(referenceTarget as DictionaryProperty, typeInfo, value);
-            handled = handled || fillCollectionProperty(referenceTarget as CollectionProperty, typeInfo, value);
-            handled = handled || fillComplexProperty(referenceTarget as ComplexProperty, typeInfo, value);
+            var handled = _fillSingleDimensionalArrayProperty(referenceTarget as SingleDimensionalArrayProperty, typeInfo, value);
+            handled = handled || _fillMultiDimensionalArrayProperty(referenceTarget as MultiDimensionalArrayProperty, typeInfo, value);
+            handled = handled || _fillDictionaryProperty(referenceTarget as DictionaryProperty, typeInfo, value);
+            handled = handled || _fillCollectionProperty(referenceTarget as CollectionProperty, typeInfo, value);
+            handled = handled || _fillComplexProperty(referenceTarget as ComplexProperty, typeInfo, value);
 
             if (!handled)
                 throw new InvalidOperationException(string.Format("Property cannot be filled. Property: {0}",
@@ -93,7 +92,7 @@ namespace Serialization.Serializing
             return referenceTarget;
         }
 
-        private static ReferenceTargetProperty createReferenceTargetInstance(string name, TypeInfo typeInfo)
+        private static ReferenceTargetProperty _createReferenceTargetInstance(string name, TypeInfo typeInfo)
         {
             // Is it array?
             if (typeInfo.IsArray)
@@ -125,18 +124,18 @@ namespace Serialization.Serializing
             return new ComplexProperty(name, typeInfo.Type);
         }
 
-        private bool fillComplexProperty(ComplexProperty property, TypeInfo typeInfo, object value)
+        private bool _fillComplexProperty(ComplexProperty property, TypeInfo typeInfo, object value)
         {
             if (property == null)
                 return false;
 
             // Parsing properties
-            parseProperties(property, typeInfo, value);
+            _parseProperties(property, typeInfo, value);
 
             return true;
         }
 
-        private void parseProperties(ComplexProperty property, TypeInfo typeInfo, object value)
+        private void _parseProperties(ComplexProperty property, TypeInfo typeInfo, object value)
         {
             IList<PropertyInfo> propertyInfos = _propertyProvider.GetProperties(typeInfo);
             foreach (PropertyInfo propertyInfo in propertyInfos)
@@ -150,21 +149,21 @@ namespace Serialization.Serializing
         }
 
 
-        private bool fillCollectionProperty(CollectionProperty property, TypeInfo info, object value)
+        private bool _fillCollectionProperty(CollectionProperty property, TypeInfo info, object value)
         {
             if (property == null)
                 return false;
 
             // Parsing properties
-            parseProperties(property, info, value);
+            _parseProperties(property, info, value);
 
             // Parse Items
-            parseCollectionItems(property, info, value);
+            _parseCollectionItems(property, info, value);
 
             return true;
         }
 
-        private void parseCollectionItems(CollectionProperty property, TypeInfo info, object value)
+        private void _parseCollectionItems(CollectionProperty property, TypeInfo info, object value)
         {
             property.ElementType = info.ElementType;
 
@@ -177,21 +176,21 @@ namespace Serialization.Serializing
             }
         }
 
-        private bool fillDictionaryProperty(DictionaryProperty property, TypeInfo info, object value)
+        private bool _fillDictionaryProperty(DictionaryProperty property, TypeInfo info, object value)
         {
             if (property == null)
                 return false;
 
             // Properties
-            parseProperties(property, info, value);
+            _parseProperties(property, info, value);
 
             // Items
-            parseDictionaryItems(property, info, value);
+            _parseDictionaryItems(property, info, value);
 
             return true;
         }
 
-        private void parseDictionaryItems(DictionaryProperty property, TypeInfo info, object value)
+        private void _parseDictionaryItems(DictionaryProperty property, TypeInfo info, object value)
         {
             property.KeyType = info.KeyType;
             property.ValueType = info.ElementType;
@@ -207,7 +206,7 @@ namespace Serialization.Serializing
             }
         }
 
-        private bool fillMultiDimensionalArrayProperty(MultiDimensionalArrayProperty property, TypeInfo info, object value)
+        private bool _fillMultiDimensionalArrayProperty(MultiDimensionalArrayProperty property, TypeInfo info, object value)
         {
             if (property == null)
                 return false;
@@ -229,7 +228,7 @@ namespace Serialization.Serializing
             return true;
         }
 
-        private bool fillSingleDimensionalArrayProperty(SingleDimensionalArrayProperty property, TypeInfo info, object value)
+        private bool _fillSingleDimensionalArrayProperty(SingleDimensionalArrayProperty property, TypeInfo info, object value)
         {
             if (property == null)
                 return false;
@@ -253,12 +252,11 @@ namespace Serialization.Serializing
             return true;
         }
 
-        private static Property createSimpleProperty(string name, TypeInfo typeInfo, object value)
+        private static Property _createSimpleProperty(string name, TypeInfo typeInfo, object value)
         {
             if (!typeInfo.IsSimple) return null;
-            var result = new SimpleProperty(name, typeInfo.Type);
-            result.Value = value;
-            return result;
+            var result = new SimpleProperty(name, typeInfo.Type) {Value = value};
+	        return result;
         }
     }
 }

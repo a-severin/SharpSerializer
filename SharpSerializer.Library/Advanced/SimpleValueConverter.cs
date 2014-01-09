@@ -70,7 +70,7 @@ namespace Serialization.Advanced
             }
 
             // Type
-            if (isType(value))
+            if (_isType(value))
                 return _typeNameConverter.ConvertToTypeName((Type)value);
 
             // Char which is \0
@@ -128,7 +128,7 @@ namespace Serialization.Advanced
                     return Convert.FromBase64String(text);
                 }
                 // Type-check must be last
-                if (isType(type))
+                if (_isType(type))
                 {
                     return _typeNameConverter.ConvertToType(text);
                 } 
@@ -144,7 +144,7 @@ namespace Serialization.Advanced
 
         #endregion
 
-        private static bool isType(object value)
+        private static bool _isType(object value)
         {
             return (value as Type) != null;
         }

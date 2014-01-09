@@ -28,8 +28,8 @@ namespace Serialization.Advanced
         ///<param name = "writer"></param>
         public XmlPropertySerializer(IXmlWriter writer)
         {
-            if (writer == null) throw new ArgumentNullException("writer");
-            _writer = writer;
+	        Contract.Requires<ArgumentNullException>(writer != null, "writer");
+	        _writer = writer;
         }
 
         /// <summary>
@@ -38,8 +38,8 @@ namespace Serialization.Advanced
         protected override void SerializeNullProperty(PropertyTypeInfo<NullProperty> property)
         {
             // nulls must be serialized also 
-            writeStartProperty(Elements.Null, property.Name, property.ValueType);
-            writeEndProperty();
+            _writeStartProperty(Elements.Null, property.Name, property.ValueType);
+            _writeEndProperty();
         }
 
         /// <summary>
@@ -49,19 +49,19 @@ namespace Serialization.Advanced
         {
             if (property.Property.Value == null) return;
 
-            writeStartProperty(Elements.SimpleObject, property.Name, property.ValueType);
+            _writeStartProperty(Elements.SimpleObject, property.Name, property.ValueType);
 
             _writer.WriteAttribute(Attributes.Value, property.Property.Value);
 
-            writeEndProperty();
+            _writeEndProperty();
         }
 
-        private void writeEndProperty()
+        private void _writeEndProperty()
         {
             _writer.WriteEndElement();
         }
 
-        private void writeStartProperty(string elementId, string propertyName, Type propertyType)
+        private void _writeStartProperty(string elementId, string propertyName, Type propertyType)
         {
             _writer.WriteStartElement(elementId);
 
@@ -84,7 +84,7 @@ namespace Serialization.Advanced
         protected override void SerializeMultiDimensionalArrayProperty(
             PropertyTypeInfo<MultiDimensionalArrayProperty> property)
         {
-            writeStartProperty(Elements.MultiArray, property.Name, property.ValueType);
+            _writeStartProperty(Elements.MultiArray, property.Name, property.ValueType);
 
             // additional attribute with referenceId
             if (property.Property.Reference.Count > 1)
@@ -93,25 +93,25 @@ namespace Serialization.Advanced
             }
 
             // DimensionInfos
-            writeDimensionInfos(property.Property.DimensionInfos);
+            _writeDimensionInfos(property.Property.DimensionInfos);
 
             // Einträge
-            writeMultiDimensionalArrayItems(property.Property.Items, property.Property.ElementType);
+            _writeMultiDimensionalArrayItems(property.Property.Items, property.Property.ElementType);
 
-            writeEndProperty();
+            _writeEndProperty();
         }
 
-        private void writeMultiDimensionalArrayItems(IEnumerable<MultiDimensionalArrayItem> items, Type defaultItemType)
+        private void _writeMultiDimensionalArrayItems(IEnumerable<MultiDimensionalArrayItem> items, Type defaultItemType)
         {
             _writer.WriteStartElement(SubElements.Items);
             foreach (MultiDimensionalArrayItem item in items)
             {
-                writeMultiDimensionalArrayItem(item, defaultItemType);
+                _writeMultiDimensionalArrayItem(item, defaultItemType);
             }
             _writer.WriteEndElement();
         }
 
-        private void writeMultiDimensionalArrayItem(MultiDimensionalArrayItem item, Type defaultTypeOfItemValue)
+        private void _writeMultiDimensionalArrayItem(MultiDimensionalArrayItem item, Type defaultTypeOfItemValue)
         {
             _writer.WriteStartElement(SubElements.Item);
 
@@ -125,12 +125,12 @@ namespace Serialization.Advanced
         }
 
 
-        private void writeDimensionInfos(IEnumerable<DimensionInfo> infos)
+        private void _writeDimensionInfos(IEnumerable<DimensionInfo> infos)
         {
             _writer.WriteStartElement(SubElements.Dimensions);
             foreach (DimensionInfo info in infos)
             {
-                writeDimensionInfo(info);
+                _writeDimensionInfo(info);
             }
             _writer.WriteEndElement();
         }
@@ -141,7 +141,7 @@ namespace Serialization.Advanced
         protected override void SerializeSingleDimensionalArrayProperty(
             PropertyTypeInfo<SingleDimensionalArrayProperty> property)
         {
-            writeStartProperty(Elements.SingleArray, property.Name, property.ValueType);
+            _writeStartProperty(Elements.SingleArray, property.Name, property.ValueType);
 
             // additional attribute with referenceId
             if (property.Property.Reference.Count > 1)
@@ -156,12 +156,12 @@ namespace Serialization.Advanced
             }
 
             // items
-            writeItems(property.Property.Items, property.Property.ElementType);
+            _writeItems(property.Property.Items, property.Property.ElementType);
 
-            writeEndProperty();
+            _writeEndProperty();
         }
 
-        private void writeDimensionInfo(DimensionInfo info)
+        private void _writeDimensionInfo(DimensionInfo info)
         {
             _writer.WriteStartElement(SubElements.Dimension);
             if (info.Length != 0)
@@ -181,7 +181,7 @@ namespace Serialization.Advanced
         /// <param name = "property"></param>
         protected override void SerializeDictionaryProperty(PropertyTypeInfo<DictionaryProperty> property)
         {
-            writeStartProperty(Elements.Dictionary, property.Name, property.ValueType);
+            _writeStartProperty(Elements.Dictionary, property.Name, property.ValueType);
 
             // additional attribute with referenceId
             if (property.Property.Reference.Count > 1)
@@ -190,25 +190,25 @@ namespace Serialization.Advanced
             }
 
             // Properties
-            writeProperties(property.Property.Properties, property.Property.Type);
+            _writeProperties(property.Property.Properties, property.Property.Type);
 
             // Items
-            writeDictionaryItems(property.Property.Items, property.Property.KeyType, property.Property.ValueType);
+            _writeDictionaryItems(property.Property.Items, property.Property.KeyType, property.Property.ValueType);
 
-            writeEndProperty();
+            _writeEndProperty();
         }
 
-        private void writeDictionaryItems(IEnumerable<KeyValueItem> items, Type defaultKeyType, Type defaultValueType)
+        private void _writeDictionaryItems(IEnumerable<KeyValueItem> items, Type defaultKeyType, Type defaultValueType)
         {
             _writer.WriteStartElement(SubElements.Items);
             foreach (KeyValueItem item in items)
             {
-                writeDictionaryItem(item, defaultKeyType, defaultValueType);
+                _writeDictionaryItem(item, defaultKeyType, defaultValueType);
             }
             _writer.WriteEndElement();
         }
 
-        private void writeDictionaryItem(KeyValueItem item, Type defaultKeyType, Type defaultValueType)
+        private void _writeDictionaryItem(KeyValueItem item, Type defaultKeyType, Type defaultValueType)
         {
             _writer.WriteStartElement(SubElements.Item);
             SerializeCore(new PropertyTypeInfo<Property>(item.Key, defaultKeyType));
@@ -216,7 +216,7 @@ namespace Serialization.Advanced
             _writer.WriteEndElement();
         }
 
-        private void writeValueType(Type type)
+        private void _writeValueType(Type type)
         {
             if (type != null)
             {
@@ -224,7 +224,7 @@ namespace Serialization.Advanced
             }
         }
 
-        private void writeKeyType(Type type)
+        private void _writeKeyType(Type type)
         {
             if (type != null)
             {
@@ -237,7 +237,7 @@ namespace Serialization.Advanced
         /// <param name = "property"></param>
         protected override void SerializeCollectionProperty(PropertyTypeInfo<CollectionProperty> property)
         {
-            writeStartProperty(Elements.Collection, property.Name, property.ValueType);
+            _writeStartProperty(Elements.Collection, property.Name, property.ValueType);
 
             // additional attribute with referenceId
             if (property.Property.Reference.Count > 1)
@@ -246,15 +246,15 @@ namespace Serialization.Advanced
             }
 
             // Properties
-            writeProperties(property.Property.Properties, property.Property.Type);
+            _writeProperties(property.Property.Properties, property.Property.Type);
 
             //Items
-            writeItems(property.Property.Items, property.Property.ElementType);
+            _writeItems(property.Property.Items, property.Property.ElementType);
 
-            writeEndProperty();
+            _writeEndProperty();
         }
 
-        private void writeItems(IEnumerable<Property> properties, Type defaultItemType)
+        private void _writeItems(IEnumerable<Property> properties, Type defaultItemType)
         {
             _writer.WriteStartElement(SubElements.Items);
             foreach (Property item in properties)
@@ -269,25 +269,19 @@ namespace Serialization.Advanced
         /// </summary>
         /// <param name = "properties"></param>
         /// <param name = "ownerType">to which type belong the properties</param>
-        private void writeProperties(ICollection<Property> properties, Type ownerType)
+        private void _writeProperties(ICollection<Property> properties, Type ownerType)
         {
             // check if there are properties
             if (properties.Count == 0) return;
 
             _writer.WriteStartElement(SubElements.Properties);
-            foreach (Property property in properties)
-            {
-                PropertyInfo propertyInfo = ownerType.GetProperty(property.Name);
-                if (propertyInfo != null)
-                {
-                    SerializeCore(new PropertyTypeInfo<Property>(property, propertyInfo.PropertyType));
-                }
-                else
-                {
-                    SerializeCore(new PropertyTypeInfo<Property>(property, null));
-                }
+            foreach (Property property in properties) {
+	            PropertyInfo propertyInfo = ownerType.GetProperty(property.Name);
+	            SerializeCore(propertyInfo != null
+		            ? new PropertyTypeInfo<Property>(property, propertyInfo.PropertyType)
+		            : new PropertyTypeInfo<Property>(property, null));
             }
-            _writer.WriteEndElement();
+	        _writer.WriteEndElement();
         }
 
         /// <summary>
@@ -295,7 +289,7 @@ namespace Serialization.Advanced
         /// <param name = "property"></param>
         protected override void SerializeComplexProperty(PropertyTypeInfo<ComplexProperty> property)
         {
-            writeStartProperty(Elements.ComplexObject, property.Name, property.ValueType);
+            _writeStartProperty(Elements.ComplexObject, property.Name, property.ValueType);
 
             // additional attribute with referenceId
             if (property.Property.Reference.Count>1)
@@ -304,9 +298,9 @@ namespace Serialization.Advanced
             }
 
             // Properties
-            writeProperties(property.Property.Properties, property.Property.Type);
+            _writeProperties(property.Property.Properties, property.Property.Type);
 
-            writeEndProperty();
+            _writeEndProperty();
         }
 
         /// <summary>
@@ -315,9 +309,9 @@ namespace Serialization.Advanced
         /// <param name="referenceTarget"></param>
         protected override void SerializeReference(ReferenceTargetProperty referenceTarget)
         {
-            writeStartProperty(Elements.Reference, referenceTarget.Name, null);
+            _writeStartProperty(Elements.Reference, referenceTarget.Name, null);
             _writer.WriteAttribute(Attributes.ReferenceId, referenceTarget.Reference.Id);
-            writeEndProperty();
+            _writeEndProperty();
         }
 
         /// <summary>

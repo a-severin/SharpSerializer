@@ -10,11 +10,7 @@ namespace Serialization.Core
     /// <summary>
     ///   Occures if the simple value can not be restored from its text representation
     /// </summary>
-#if Smartphone
-#elif SILVERLIGHT
-#else
     [Serializable]
-#endif
     public class SimpleValueParsingException : Exception
     {
         ///<summary>
@@ -38,9 +34,6 @@ namespace Serialization.Core
         {
         }
 
-#if Smartphone
-#elif SILVERLIGHT
-#else
         /// <summary>
         /// </summary>
         /// <param name = "info"></param>
@@ -48,6 +41,5 @@ namespace Serialization.Core
         protected SimpleValueParsingException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
-#endif
     }
 }

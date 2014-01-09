@@ -31,9 +31,9 @@ namespace Serialization.Advanced
         public DefaultXmlReader(ITypeNameConverter typeNameConverter, ISimpleValueConverter valueConverter,
                                 XmlReaderSettings settings)
         {
-            if (typeNameConverter == null) throw new ArgumentNullException("typeNameConverter");
-            if (valueConverter == null) throw new ArgumentNullException("valueConverter");
-            if (settings == null) throw new ArgumentNullException("settings");
+			Contract.Requires<ArgumentNullException>(typeNameConverter != null);
+			Contract.Requires<ArgumentNullException>(valueConverter != null);
+			Contract.Requires<ArgumentNullException>(settings != null);
 
             _typeNameConverter = typeNameConverter;
             _valueConverter = valueConverter;
@@ -73,7 +73,7 @@ namespace Serialization.Advanced
             // http://msdn.microsoft.com/query/dev10.query?appId=Dev10IDEF1&l=EN-US&k=k%28SYSTEM.XML.XMLREADER.READSUBTREE%29;k%28TargetFrameworkMoniker-%22.NETFRAMEWORK%2cVERSION%3dV2.0%22%29;k%28DevLang-CSHARP%29&rd=true
             subReader.Read();
 
-            pushCurrentReader(subReader);
+            _pushCurrentReader(subReader);
 
             try
             {
@@ -93,7 +93,7 @@ namespace Serialization.Advanced
                 // it positions the parent reader on the last node of the subReader
                 subReader.Close();
                 // aktualise the current Reader
-                popCurrentReader();
+                _popCurrentReader();
             }
         }
 
@@ -139,7 +139,7 @@ namespace Serialization.Advanced
         public int[] GetAttributeAsArrayOfInt(string attributeName)
         {
             if (!_currentReader.MoveToAttribute(attributeName)) return null;
-            return getArrayOfIntFromText(_currentReader.Value);
+            return _getArrayOfIntFromText(_currentReader.Value);
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace Serialization.Advanced
             XmlReader reader = XmlReader.Create(stream, _settings);
 
             // set the main reader
-            pushCurrentReader(reader);
+            _pushCurrentReader(reader);
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Serialization.Advanced
         /// <summary>
         ///   Remove one reader from stack and reset the current reader
         /// </summary>
-        private void popCurrentReader()
+        private void _popCurrentReader()
         {
             // Remove one reader from the stack
             if (_readerStack.Count > 0)
@@ -202,7 +202,7 @@ namespace Serialization.Advanced
         ///   Add reader to stack and set it the current reader
         /// </summary>
         /// <param name = "reader"></param>
-        private void pushCurrentReader(XmlReader reader)
+        private void _pushCurrentReader(XmlReader reader)
         {
             _readerStack.Push(reader);
 
@@ -214,7 +214,7 @@ namespace Serialization.Advanced
         /// </summary>
         /// <param name = "text"></param>
         /// <returns>null if no items are recognized or the text is null or empty</returns>
-        private static int[] getArrayOfIntFromText(string text)
+        private static int[] _getArrayOfIntFromText(string text)
         {
             if (string.IsNullOrEmpty(text)) return null;
 

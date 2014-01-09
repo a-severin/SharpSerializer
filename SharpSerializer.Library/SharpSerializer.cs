@@ -36,9 +36,7 @@ namespace Serialization {
 		/// </summary>
 		/// <param name="settings"></param>
 		public SharpSerializer(SharpSerializerXmlSettings settings) {
-			if (settings == null) {
-				throw new ArgumentNullException("settings");
-			}
+			Contract.Requires<ArgumentNullException>(settings != null);
 			_initialize(settings);
 		}
 
@@ -48,12 +46,9 @@ namespace Serialization {
 		/// <param name="serializer"></param>
 		/// <param name="deserializer"></param>
 		public SharpSerializer(IPropertySerializer serializer, IPropertyDeserializer deserializer) {
-			if (serializer == null) {
-				throw new ArgumentNullException("serializer");
-			}
-			if (deserializer == null) {
-				throw new ArgumentNullException("deserializer");
-			}
+			Contract.Requires<ArgumentNullException>(serializer != null);
+			Contract.Requires<ArgumentNullException>(deserializer != null);
+
 			_serializer = serializer;
 			_deserializer = deserializer;
 		}
@@ -65,10 +60,7 @@ namespace Serialization {
 		/// </summary>
 		public PropertyProvider PropertyProvider {
 			get {
-				if (_propertyProvider == null) {
-					_propertyProvider = new PropertyProvider();
-				}
-				return _propertyProvider;
+				return _propertyProvider ?? (_propertyProvider = new PropertyProvider());
 			}
 			set {
 				_propertyProvider = value;
@@ -80,10 +72,7 @@ namespace Serialization {
 		/// </summary>
 		public string RootName {
 			get {
-				if (_rootName == null) {
-					_rootName = "Root";
-				}
-				return _rootName;
+				return _rootName ?? (_rootName = "Root");
 			}
 			set {
 				_rootName = value;
@@ -146,9 +135,7 @@ namespace Serialization {
 		/// <param name="stream"></param>
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void Serialize(object data, Stream stream) {
-			if (data == null) {
-				throw new ArgumentNullException("data");
-			}
+			Contract.Requires<ArgumentNullException>(data != null, "data");
 
 			var factory = new PropertyFactory(PropertyProvider);
 

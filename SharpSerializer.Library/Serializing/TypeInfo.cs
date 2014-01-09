@@ -62,13 +62,8 @@ namespace Serialization.Serializing
 
         private static TypeInfoCollection Cache
         {
-            get
-            {
-                if (_cache==null)
-                {
-                    _cache=new TypeInfoCollection();
-                }
-                return _cache;
+            get {
+	            return _cache ?? (_cache = new TypeInfoCollection());
             }
         }
 
@@ -80,9 +75,9 @@ namespace Serialization.Serializing
         ///<exception cref = "ArgumentNullException"></exception>
         public static TypeInfo GetTypeInfo(object obj)
         {
-            if (obj == null) throw new ArgumentNullException("obj");
+	        Contract.Requires<ArgumentNullException>(obj != null, "obj");
 
-            Type type = obj.GetType();
+	        Type type = obj.GetType();
             return GetTypeInfo(type);
         }
 
@@ -98,12 +93,9 @@ namespace Serialization.Serializing
             if (typeInfo == null)
             {
                 // no info in cache yet
-                typeInfo = new TypeInfo();
-                typeInfo.Type = type;
+                typeInfo = new TypeInfo {Type = type, IsSimple = Tools.IsSimple(type)};
 
-                typeInfo.IsSimple = Tools.IsSimple(type);   
-
-                // new since v.2.16
+	            // new since v.2.16
                 // check if array of byte
                 if (type==typeof(byte[]))
                 {
@@ -146,7 +138,7 @@ namespace Serialization.Serializing
                                 var examinedType = type;
                                 do
                                 {
-                                    elementTypeDefinitionFound = fillKeyAndElementType(typeInfo, examinedType);
+                                    elementTypeDefinitionFound = _fillKeyAndElementType(typeInfo, examinedType);
                                     examinedType = examinedType.BaseType;
                                     // until key and element definition was found, or the base typ is an object
                                 } while (!elementTypeDefinitionFound && examinedType!=null && examinedType!=typeof(object));
@@ -154,11 +146,7 @@ namespace Serialization.Serializing
                         }
                     }
                 }
-#if Smartphone
-                Cache.AddIfNotExists(typeInfo);
-#else
                 Cache.Add(typeInfo);
-#endif
             }
 
             return typeInfo;
@@ -170,7 +158,7 @@ namespace Serialization.Serializing
         /// <param name="typeInfo"></param>
         /// <param name="type"></param>
         /// <returns>true if the key and value definition was found</returns>
-        private static bool fillKeyAndElementType(TypeInfo typeInfo, Type type)
+        private static bool _fillKeyAndElementType(TypeInfo typeInfo, Type type)
         {
             if (type.IsGenericType)
             {

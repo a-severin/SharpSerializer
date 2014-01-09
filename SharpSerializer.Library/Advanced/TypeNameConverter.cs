@@ -72,17 +72,17 @@ namespace Serialization.Advanced
 
             if (!IncludeAssemblyVersion)
             {
-                typename = removeAssemblyVersion(typename);
+                typename = _removeAssemblyVersion(typename);
             }
 
             if (!IncludeCulture)
             {
-                typename = removeCulture(typename);
+                typename = _removeCulture(typename);
             }
 
             if (!IncludePublicKeyToken)
             {
-                typename = removePublicKeyToken(typename);
+                typename = _removePublicKeyToken(typename);
             }
 
             // Adding to cache
@@ -105,19 +105,19 @@ namespace Serialization.Advanced
 
         #endregion
 
-        private static string removePublicKeyToken(string typename)
-        {
-            return Regex.Replace(typename, @", PublicKeyToken=\w+", string.Empty);
+        private static string _removePublicKeyToken(string typename) {
+	        Contract.Requires<ArgumentNullException>(typename != null, "typename");
+	        return Regex.Replace(typename, @", PublicKeyToken=\w+", string.Empty);
         }
 
-        private static string removeCulture(string typename)
-        {
-            return Regex.Replace(typename, @", Culture=\w+", string.Empty);
+	    private static string _removeCulture(string typename) {
+	        Contract.Requires<ArgumentNullException>(typename != null, "typename");
+	        return Regex.Replace(typename, @", Culture=\w+", string.Empty);
         }
 
-        private static string removeAssemblyVersion(string typename)
-        {
-            return Regex.Replace(typename, @", Version=\d+.\d+.\d+.\d+", string.Empty);
+	    private static string _removeAssemblyVersion(string typename) {
+	        Contract.Requires<ArgumentNullException>(typename != null, "typename");
+	        return Regex.Replace(typename, @", Version=\d+.\d+.\d+.\d+", string.Empty);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace Serialization.Core
         {
             _array = array;
             var type = array.GetType();
-            _arrayInfo = getArrayInfo(type);
+            _arrayInfo = _getArrayInfo(type);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Serialization.Core
         ///   How many dimensions. There can be at least 1
         /// </summary>
         /// <returns></returns>
-        private int getRank(Type arrayType)
+        private static int _getRank(Type arrayType)
         {
             return arrayType.GetArrayRank();
         }
@@ -49,7 +49,7 @@ namespace Serialization.Core
         /// <param name = "dimension">0-based</param>
         /// <returns></returns>
         /// <param name="arrayType"></param>
-        private int getLength(int dimension, Type arrayType)
+        private int _getLength(int dimension, Type arrayType)
         {
             MethodInfo methodInfo = arrayType.GetMethod("GetLength");
             var length = (int) methodInfo.Invoke(_array, new object[] {dimension});
@@ -62,9 +62,9 @@ namespace Serialization.Core
         /// <param name = "dimension">0-based</param>
         /// <returns></returns>
         /// <param name="arrayType"></param>
-        private int getLowerBound(int dimension, Type arrayType)
+        private int _getLowerBound(int dimension, Type arrayType)
         {
-            return getBound("GetLowerBound", dimension, arrayType);
+            return _getBound("GetLowerBound", dimension, arrayType);
         }
 
 
@@ -74,26 +74,28 @@ namespace Serialization.Core
 //            return getBound("GetUpperBound", dimension);
 //        }
 
-        private int getBound(string methodName, int dimension, Type arrayType)
+        private int _getBound(string methodName, int dimension, Type arrayType)
         {
-            MethodInfo methodInfo = arrayType.GetMethod(methodName);
+	        Contract.Requires<ArgumentNullException>(methodName != null, "methodName");
+	        MethodInfo methodInfo = arrayType.GetMethod(methodName);
             var bound = (int) methodInfo.Invoke(_array, new object[] {dimension});
             return bound;
         }
 
-        private ArrayInfo getArrayInfo(Type arrayType)
+        private ArrayInfo _getArrayInfo(Type arrayType)
         {
             // Caching is innacceptable, as an array of type string can have different bounds
 
             var info = new ArrayInfo();
 
             // Fill the dimension infos
-            for (int dimension = 0; dimension < getRank(arrayType); dimension++)
+            for (int dimension = 0; dimension < _getRank(arrayType); dimension++)
             {
-                var dimensionInfo = new DimensionInfo();
-                dimensionInfo.Length = getLength(dimension, arrayType);
-                dimensionInfo.LowerBound = getLowerBound(dimension, arrayType);
-                info.DimensionInfos.Add(dimensionInfo);
+                var dimensionInfo = new DimensionInfo {
+	                Length = _getLength(dimension, arrayType),
+	                LowerBound = _getLowerBound(dimension, arrayType)
+                };
+	            info.DimensionInfos.Add(dimensionInfo);
             }
 
 
@@ -108,7 +110,7 @@ namespace Serialization.Core
             if (_indexes == null)
             {
                 _indexes = new List<int[]>();
-                ForEach(addIndexes);
+                ForEach(_addIndexes);
             }
 
             foreach (var item in _indexes)
@@ -129,7 +131,7 @@ namespace Serialization.Core
             }
         }
 
-        private void addIndexes(int[] obj)
+        private void _addIndexes(int[] obj)
         {
             _indexes.Add(obj);
         }
@@ -143,12 +145,11 @@ namespace Serialization.Core
             DimensionInfo dimensionInfo = _arrayInfo.DimensionInfos[0];
             for (int index = dimensionInfo.LowerBound; index < dimensionInfo.LowerBound + dimensionInfo.Length; index++)
             {
-                var result = new List<int>();
+                var result = new List<int> {index};
 
                 // Adding the first coordinate
-                result.Add(index);
 
-                if (_arrayInfo.DimensionInfos.Count < 2)
+	            if (_arrayInfo.DimensionInfos.Count < 2)
                 {
                     // only one dimension
                     action.Invoke(result.ToArray());
@@ -156,7 +157,7 @@ namespace Serialization.Core
                 }
 
                 // further dimensions
-                forEach(_arrayInfo.DimensionInfos, 1, result, action);
+                _forEach(_arrayInfo.DimensionInfos, 1, result, action);
             }
         }
 
@@ -168,18 +169,18 @@ namespace Serialization.Core
         /// <param name = "dimension"></param>
         /// <param name = "coordinates"></param>
         /// <param name = "action"></param>
-        private void forEach(IList<DimensionInfo> dimensionInfos, int dimension, IEnumerable<int> coordinates,
+        private void _forEach(IList<DimensionInfo> dimensionInfos, int dimension, IEnumerable<int> coordinates,
                              Action<int[]> action)
         {
+			Contract.Requires(dimension >= 0);
             DimensionInfo dimensionInfo = dimensionInfos[dimension];
             for (int index = dimensionInfo.LowerBound; index < dimensionInfo.LowerBound + dimensionInfo.Length; index++)
             {
-                var result = new List<int>(coordinates);
+                var result = new List<int>(coordinates) {index};
 
                 // Adding the first coordinate
-                result.Add(index);
 
-                if (dimension == _arrayInfo.DimensionInfos.Count - 1)
+	            if (dimension == _arrayInfo.DimensionInfos.Count - 1)
                 {
                     // This is the last dimension
                     action.Invoke(result.ToArray());
@@ -187,7 +188,7 @@ namespace Serialization.Core
                 }
 
                 // Further dimensions
-                forEach(_arrayInfo.DimensionInfos, dimension + 1, result, action);
+                _forEach(_arrayInfo.DimensionInfos, dimension + 1, result, action);
             }
         }
     }
@@ -203,12 +204,10 @@ namespace Serialization.Core
         ///</summary>
         public IList<DimensionInfo> DimensionInfos
         {
-            get
-            {
-                if (_dimensionInfos == null) _dimensionInfos = new List<DimensionInfo>();
-                return _dimensionInfos;
+            get {
+	            return _dimensionInfos ?? (_dimensionInfos = new List<DimensionInfo>());
             }
-            set { _dimensionInfos = value; }
+	        set { _dimensionInfos = value; }
         }
     }
 }

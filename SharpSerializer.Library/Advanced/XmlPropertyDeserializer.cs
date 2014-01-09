@@ -55,12 +55,12 @@ namespace Serialization.Advanced
             string elementName = _reader.ReadElement();
 
             // In what xml tag is the property saved
-            PropertyArt propertyArt = getPropertyArtFromString(elementName);
+            PropertyArt propertyArt = _getPropertyArtFromString(elementName);
 
             // check if the property was found
             if (propertyArt == PropertyArt.Unknown) return null;
 
-            Property result = deserialize(propertyArt, null);
+            Property result = _deserialize(propertyArt, null);
             return result;
         }
 
@@ -74,21 +74,16 @@ namespace Serialization.Advanced
 
         #endregion
 
-        private Property deserialize(PropertyArt propertyArt, Type expectedType)
+        private Property _deserialize(PropertyArt propertyArt, Type expectedType)
         {
             // Establish the property name
             string propertyName = _reader.GetAttributeAsString(Attributes.Name);
 
             // Establish the property type
-            Type propertyType = _reader.GetAttributeAsType(Attributes.Type);
-
-            // id propertyType is not defined, we'll take the expectedType)
-            if (propertyType == null)
-            {
-                propertyType = expectedType;
-            }
-
-            // create the property from the tag
+			// id propertyType is not defined, we'll take the expectedType)
+            Type propertyType = _reader.GetAttributeAsType(Attributes.Type) ?? expectedType;
+            
+	        // create the property from the tag
             Property property = Property.CreateInstance(propertyArt, propertyName, propertyType);
 
             // Null property?
@@ -102,7 +97,7 @@ namespace Serialization.Advanced
             var simpleProperty = property as SimpleProperty;
             if (simpleProperty != null)
             {
-                parseSimpleProperty(_reader, simpleProperty);
+                _parseSimpleProperty(_reader, simpleProperty);
                 return simpleProperty;
             }
 
@@ -127,7 +122,7 @@ namespace Serialization.Advanced
                     // there is no reference, so the property cannot be restored
                     return null;
 
-                property = createProperty(referenceId, propertyName, propertyType);
+                property = _createProperty(referenceId, propertyName, propertyType);
                 if (property == null)
                     // Reference was not created
                     return null;
@@ -139,42 +134,42 @@ namespace Serialization.Advanced
             var multiDimensionalArrayProperty = property as MultiDimensionalArrayProperty;
             if (multiDimensionalArrayProperty != null)
             {
-                parseMultiDimensionalArrayProperty(multiDimensionalArrayProperty);
+                _parseMultiDimensionalArrayProperty(multiDimensionalArrayProperty);
                 return multiDimensionalArrayProperty;
             }
 
             var singleDimensionalArrayProperty = property as SingleDimensionalArrayProperty;
             if (singleDimensionalArrayProperty != null)
             {
-                parseSingleDimensionalArrayProperty(singleDimensionalArrayProperty);
+                _parseSingleDimensionalArrayProperty(singleDimensionalArrayProperty);
                 return singleDimensionalArrayProperty;
             }
 
             var dictionaryProperty = property as DictionaryProperty;
             if (dictionaryProperty != null)
             {
-                parseDictionaryProperty(dictionaryProperty);
+                _parseDictionaryProperty(dictionaryProperty);
                 return dictionaryProperty;
             }
 
             var collectionProperty = property as CollectionProperty;
             if (collectionProperty != null)
             {
-                parseCollectionProperty(collectionProperty);
+                _parseCollectionProperty(collectionProperty);
                 return collectionProperty;
             }
 
             var complexProperty = property as ComplexProperty;
             if (complexProperty != null)
             {
-                parseComplexProperty(complexProperty);
+                _parseComplexProperty(complexProperty);
                 return complexProperty;
             }
 
             return property;
         }
 
-        private void parseCollectionProperty(CollectionProperty property)
+        private void _parseCollectionProperty(CollectionProperty property)
         {
             // ElementType
             property.ElementType = property.Type != null ? TypeInfo.GetTypeInfo(property.Type).ElementType : null;
@@ -184,19 +179,19 @@ namespace Serialization.Advanced
                 if (subElement == SubElements.Properties)
                 {
                     // Properties
-                    readProperties(property.Properties, property.Type);
+                    _readProperties(property.Properties, property.Type);
                     continue;
                 }
 
                 if (subElement == SubElements.Items)
                 {
                     // Items
-                    readItems(property.Items, property.ElementType);
+                    _readItems(property.Items, property.ElementType);
                 }
             }
         }
 
-        private void parseDictionaryProperty(DictionaryProperty property)
+        private void _parseDictionaryProperty(DictionaryProperty property)
         {
             if (property.Type!=null)
             {
@@ -210,29 +205,29 @@ namespace Serialization.Advanced
                 if (subElement == SubElements.Properties)
                 {
                     // Properties
-                    readProperties(property.Properties, property.Type);
+                    _readProperties(property.Properties, property.Type);
                     continue;
                 }
                 if (subElement == SubElements.Items)
                 {
                     // Items
-                    readDictionaryItems(property.Items, property.KeyType, property.ValueType);
+                    _readDictionaryItems(property.Items, property.KeyType, property.ValueType);
                 }
             }
         }
 
-        private void readDictionaryItems(IList<KeyValueItem> items, Type expectedKeyType, Type expectedValueType)
+        private void _readDictionaryItems(IList<KeyValueItem> items, Type expectedKeyType, Type expectedValueType)
         {
             foreach (string subElement in _reader.ReadSubElements())
             {
                 if (subElement == SubElements.Item)
                 {
-                    readDictionaryItem(items, expectedKeyType, expectedValueType);
+                    _readDictionaryItem(items, expectedKeyType, expectedValueType);
                 }
             }
         }
 
-        private void readDictionaryItem(IList<KeyValueItem> items, Type expectedKeyType, Type expectedValueType)
+        private void _readDictionaryItem(IList<KeyValueItem> items, Type expectedKeyType, Type expectedValueType)
         {
             Property keyProperty = null;
             Property valueProperty = null;
@@ -242,7 +237,7 @@ namespace Serialization.Advanced
                 if (keyProperty != null && valueProperty != null) break;
 
                 // check if valid tag was found
-                PropertyArt propertyArt = getPropertyArtFromString(subElement);
+                PropertyArt propertyArt = _getPropertyArtFromString(subElement);
                 if (propertyArt == PropertyArt.Unknown) continue;
 
                 // items are as pair key-value defined
@@ -251,12 +246,12 @@ namespace Serialization.Advanced
                 if (keyProperty == null)
                 {
                     // Key was not defined yet (the first item was found)
-                    keyProperty = deserialize(propertyArt, expectedKeyType);
+                    keyProperty = _deserialize(propertyArt, expectedKeyType);
                     continue;
                 }
 
                 // key was defined (the second item was found)
-                valueProperty = deserialize(propertyArt, expectedValueType);
+                valueProperty = _deserialize(propertyArt, expectedValueType);
             }
 
             // create the item
@@ -264,7 +259,7 @@ namespace Serialization.Advanced
             items.Add(item);
         }
 
-        private void parseMultiDimensionalArrayProperty(MultiDimensionalArrayProperty property)
+        private void _parseMultiDimensionalArrayProperty(MultiDimensionalArrayProperty property)
         {
             property.ElementType = property.Type != null ? TypeInfo.GetTypeInfo(property.Type).ElementType : null;
 
@@ -273,62 +268,63 @@ namespace Serialization.Advanced
                 if (subElement == SubElements.Dimensions)
                 {
                     // Read dimensions
-                    readDimensionInfos(property.DimensionInfos);
+                    _readDimensionInfos(property.DimensionInfos);
                 }
 
                 if (subElement == SubElements.Items)
                 {
                     // Read items
-                    readMultiDimensionalArrayItems(property.Items, property.ElementType);
+                    _readMultiDimensionalArrayItems(property.Items, property.ElementType);
                 }
             }
         }
 
-        private void readMultiDimensionalArrayItems(IList<MultiDimensionalArrayItem> items, Type expectedElementType)
+        private void _readMultiDimensionalArrayItems(IList<MultiDimensionalArrayItem> items, Type expectedElementType)
         {
             foreach (string subElement in _reader.ReadSubElements())
             {
                 if (subElement == SubElements.Item)
                 {
-                    readMultiDimensionalArrayItem(items, expectedElementType);
+                    _readMultiDimensionalArrayItem(items, expectedElementType);
                 }
             }
         }
 
-        private void readMultiDimensionalArrayItem(IList<MultiDimensionalArrayItem> items, Type expectedElementType)
+        private void _readMultiDimensionalArrayItem(IList<MultiDimensionalArrayItem> items, Type expectedElementType)
         {
             int[] indexes = _reader.GetAttributeAsArrayOfInt(Attributes.Indexes);
             foreach (string subElement in _reader.ReadSubElements())
             {
-                PropertyArt propertyArt = getPropertyArtFromString(subElement);
+                PropertyArt propertyArt = _getPropertyArtFromString(subElement);
                 if (propertyArt == PropertyArt.Unknown) continue;
 
-                Property value = deserialize(propertyArt, expectedElementType);
+                Property value = _deserialize(propertyArt, expectedElementType);
                 var item = new MultiDimensionalArrayItem(indexes, value);
                 items.Add(item);
             }
         }
 
-        private void readDimensionInfos(IList<DimensionInfo> dimensionInfos)
+        private void _readDimensionInfos(IList<DimensionInfo> dimensionInfos)
         {
             foreach (string subElement in _reader.ReadSubElements())
             {
                 if (subElement == SubElements.Dimension)
                 {
-                    readDimensionInfo(dimensionInfos);
+                    _readDimensionInfo(dimensionInfos);
                 }
             }
         }
 
-        private void readDimensionInfo(IList<DimensionInfo> dimensionInfos)
+        private void _readDimensionInfo(IList<DimensionInfo> dimensionInfos)
         {
-            var info = new DimensionInfo();
-            info.Length = _reader.GetAttributeAsInt(Attributes.Length);
-            info.LowerBound = _reader.GetAttributeAsInt(Attributes.LowerBound);
-            dimensionInfos.Add(info);
+            var info = new DimensionInfo {
+	            Length = _reader.GetAttributeAsInt(Attributes.Length),
+	            LowerBound = _reader.GetAttributeAsInt(Attributes.LowerBound)
+            };
+	        dimensionInfos.Add(info);
         }
 
-        private void parseSingleDimensionalArrayProperty(SingleDimensionalArrayProperty property)
+        private void _parseSingleDimensionalArrayProperty(SingleDimensionalArrayProperty property)
         {
             // ElementType
             property.ElementType = property.Type != null ? TypeInfo.GetTypeInfo(property.Type).ElementType : null;
@@ -341,42 +337,42 @@ namespace Serialization.Advanced
             {
                 if (subElement == SubElements.Items)
                 {
-                    readItems(property.Items, property.ElementType);
+                    _readItems(property.Items, property.ElementType);
                 }
             }
         }
 
-        private void readItems(ICollection<Property> items, Type expectedElementType)
+        private void _readItems(ICollection<Property> items, Type expectedElementType)
         {
             foreach (string subElement in _reader.ReadSubElements())
             {
-                PropertyArt propertyArt = getPropertyArtFromString(subElement);
+                PropertyArt propertyArt = _getPropertyArtFromString(subElement);
                 if (propertyArt != PropertyArt.Unknown)
                 {
                     // Property is found
-                    Property subProperty = deserialize(propertyArt, expectedElementType);
+                    Property subProperty = _deserialize(propertyArt, expectedElementType);
                     items.Add(subProperty);
                 }
             }
         }
 
-        private void parseComplexProperty(ComplexProperty property)
+        private void _parseComplexProperty(ComplexProperty property)
         {
 
             foreach (string subElement in _reader.ReadSubElements())
             {
                 if (subElement == SubElements.Properties)
                 {
-                    readProperties(property.Properties, property.Type);
+                    _readProperties(property.Properties, property.Type);
                 }
             }
         }
 
-        private void readProperties(PropertyCollection properties, Type ownerType)
+        private void _readProperties(PropertyCollection properties, Type ownerType)
         {
             foreach (string subElement in _reader.ReadSubElements())
             {
-                PropertyArt propertyArt = getPropertyArtFromString(subElement);
+                PropertyArt propertyArt = _getPropertyArtFromString(subElement);
                 if (propertyArt != PropertyArt.Unknown)
                 {
                     // check if the property with the name exists
@@ -387,19 +383,19 @@ namespace Serialization.Advanced
                     PropertyInfo subPropertyInfo = ownerType.GetProperty(subPropertyName);
                     if (subPropertyInfo != null)
                     {
-                        Property subProperty = deserialize(propertyArt, subPropertyInfo.PropertyType);
+                        Property subProperty = _deserialize(propertyArt, subPropertyInfo.PropertyType);
                         properties.Add(subProperty);
                     }
                 }
             }
         }
 
-        private void parseSimpleProperty(IXmlReader reader, SimpleProperty property)
+        private void _parseSimpleProperty(IXmlReader reader, SimpleProperty property)
         {
             property.Value = _reader.GetAttributeAsObject(Attributes.Value, property.Type);
         }
 
-        private Property createProperty(int referenceId, string propertyName, Type propertyType)
+        private Property _createProperty(int referenceId, string propertyName, Type propertyType)
         {
             var cachedProperty = _propertyCache[referenceId];
             var property = (ReferenceTargetProperty)Property.CreateInstance(cachedProperty.Art, propertyName, propertyType);
@@ -410,7 +406,7 @@ namespace Serialization.Advanced
             return property;
         }
 
-        private static PropertyArt getPropertyArtFromString(string name)
+        private static PropertyArt _getPropertyArtFromString(string name)
         {
             if (name == Elements.SimpleObject) return PropertyArt.Simple;
             if (name == Elements.ComplexObject) return PropertyArt.Complex;

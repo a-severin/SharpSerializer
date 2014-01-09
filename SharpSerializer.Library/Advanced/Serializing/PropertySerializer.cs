@@ -43,7 +43,7 @@ namespace Serialization.Advanced.Serializing
         /// <param name = "property"></param>
         protected void SerializeCore(PropertyTypeInfo<Property> property)
         {
-            if (property == null) throw new ArgumentNullException("property");
+			Contract.Requires<ArgumentNullException>(property != null);
 
             var nullProperty = property.Property as NullProperty;
             if (nullProperty != null)
@@ -73,12 +73,12 @@ namespace Serialization.Advanced.Serializing
             var referenceTarget = property.Property as ReferenceTargetProperty;
             if (referenceTarget != null)
             {
-                if (serializeReference(referenceTarget))
+                if (_serializeReference(referenceTarget))
                     // Reference to object was serialized
                     return;
 
                 // Full Serializing of the object
-                if (serializeReferenceTarget(new PropertyTypeInfo<ReferenceTargetProperty>(referenceTarget,
+                if (_serializeReferenceTarget(new PropertyTypeInfo<ReferenceTargetProperty>(referenceTarget,
                                                                                        property.ExpectedPropertyType,
                                                                                        property.ValueType)))
                 {                    
@@ -89,7 +89,7 @@ namespace Serialization.Advanced.Serializing
             throw new InvalidOperationException(string.Format("Unknown Property: {0}", property.Property.GetType()));            
         }
 
-        private bool serializeReferenceTarget(PropertyTypeInfo<ReferenceTargetProperty> property)
+        private bool _serializeReferenceTarget(PropertyTypeInfo<ReferenceTargetProperty> property)
         {
             var multiDimensionalArrayProperty = property.Property as MultiDimensionalArrayProperty;
             if (multiDimensionalArrayProperty != null)
@@ -146,7 +146,7 @@ namespace Serialization.Advanced.Serializing
             return false;
         }
 
-        private bool serializeReference(ReferenceTargetProperty property)
+        private bool _serializeReference(ReferenceTargetProperty property)
         {
             if (property.Reference.Count > 1)
             {

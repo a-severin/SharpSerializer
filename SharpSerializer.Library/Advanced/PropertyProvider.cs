@@ -18,12 +18,27 @@ namespace Serialization.Advanced {
 	///     Its property PropertiesToIgnore contains properties, which are ignored during the serialization.
 	/// </summary>
 	public class PropertyProvider {
-		private PropertiesToIgnore _propertiesToIgnore;
+		private static PropertyCache _cache;
 		private IList<Type> _attributesToIgnore;
-#if !Smartphone
-		[ThreadStatic]
-#endif
-			private static PropertyCache _cache;
+		private PropertiesToIgnore _propertiesToIgnore;
+
+		/// <summary>
+		///     All Properties markt with one of the contained attribute-types will be ignored on save.
+		/// </summary>
+		public IList<Type> AttributesToIgnore {
+			get {
+				return _attributesToIgnore ?? (_attributesToIgnore = new List<Type>());
+			}
+			set {
+				_attributesToIgnore = value;
+			}
+		}
+
+		private static PropertyCache Cache {
+			get {
+				return _cache ?? (_cache = new PropertyCache());
+			}
+		}
 
 		/// <summary>
 		///     Which properties should be ignored
@@ -40,28 +55,10 @@ namespace Serialization.Advanced {
 		/// </remarks>
 		public PropertiesToIgnore PropertiesToIgnore {
 			get {
-				if (_propertiesToIgnore == null) {
-					_propertiesToIgnore = new PropertiesToIgnore();
-				}
-				return _propertiesToIgnore;
+				return _propertiesToIgnore ?? (_propertiesToIgnore = new PropertiesToIgnore());
 			}
 			set {
 				_propertiesToIgnore = value;
-			}
-		}
-
-		/// <summary>
-		///     All Properties markt with one of the contained attribute-types will be ignored on save.
-		/// </summary>
-		public IList<Type> AttributesToIgnore {
-			get {
-				if (_attributesToIgnore == null) {
-					_attributesToIgnore = new List<Type>();
-				}
-				return _attributesToIgnore;
-			}
-			set {
-				_attributesToIgnore = value;
 			}
 		}
 
@@ -96,6 +93,21 @@ namespace Serialization.Advanced {
 			Cache.Add(typeInfo.Type, result);
 
 			return result;
+		}
+
+		/// <summary>
+		///     Should the property be removed from serialization?
+		/// </summary>
+		/// <param name="info"></param>
+		/// <returns>
+		///     true if the property:
+		///     - is in the PropertiesToIgnore,
+		///     - contains ExcludeFromSerializationAttribute,
+		///     - does not have it's set or get accessor
+		///     - is indexer
+		/// </returns>
+		protected virtual bool IgnoreProperty(TypeInfo info) {
+			return IgnoreProperty(info, null);
 		}
 
 		/// <summary>
@@ -160,15 +172,6 @@ namespace Serialization.Advanced {
 		protected virtual PropertyInfo[] GetAllProperties(Type type) {
 			return type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 		}
-
-		private static PropertyCache Cache {
-			get {
-				if (_cache == null) {
-					_cache = new PropertyCache();
-				}
-				return _cache;
-			}
-		}
 	}
 
 	/// <summary>
@@ -182,13 +185,13 @@ namespace Serialization.Advanced {
 		/// <param name="type"></param>
 		/// <param name="propertyName"></param>
 		public void Add(Type type, string propertyName) {
-			TypePropertiesToIgnore item = getPropertiesToIgnore(type);
+			TypePropertiesToIgnore item = _getPropertiesToIgnore(type);
 			if (!item.PropertyNames.Contains(propertyName)) {
 				item.PropertyNames.Add(propertyName);
 			}
 		}
 
-		private TypePropertiesToIgnore getPropertiesToIgnore(Type type) {
+		private TypePropertiesToIgnore _getPropertiesToIgnore(Type type) {
 			TypePropertiesToIgnore item = _propertiesToIgnore.TryFind(type);
 			if (item == null) {
 				item = new TypePropertiesToIgnore(type);
@@ -218,10 +221,7 @@ namespace Serialization.Advanced {
 
 			public IList<string> PropertyNames {
 				get {
-					if (_propertyNames == null) {
-						_propertyNames = new List<string>();
-					}
-					return _propertyNames;
+					return _propertyNames ?? (_propertyNames = new List<string>());
 				}
 				set {
 					_propertyNames = value;

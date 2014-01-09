@@ -100,12 +100,10 @@ namespace Serialization.Core
         /// </remarks>
         public PropertiesToIgnore PropertiesToIgnore
         {
-            get
-            {
-                if (_propertiesToIgnore == null) _propertiesToIgnore = new PropertiesToIgnore();
-                return _propertiesToIgnore;
+            get {
+	            return _propertiesToIgnore ?? (_propertiesToIgnore = new PropertiesToIgnore());
             }
-            set { _propertiesToIgnore = value; }
+	        set { _propertiesToIgnore = value; }
         }
 
         /// <summary>
@@ -116,12 +114,10 @@ namespace Serialization.Core
         /// </summary>
         public IList<Type> AttributesToIgnore
         {
-            get
-            {
-                if (_attributesToIgnore == null) _attributesToIgnore = new List<Type>(); 
-                return _attributesToIgnore;
+            get {
+	            return _attributesToIgnore ?? (_attributesToIgnore = new List<Type>());
             }
-            set { _attributesToIgnore = value; }
+	        set { _attributesToIgnore = value; }
         }
 
         /// <summary>
