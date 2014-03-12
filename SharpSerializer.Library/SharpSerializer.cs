@@ -183,5 +183,21 @@ namespace Serialization {
 					"An error occured during the deserialization. Details are in the inner exception.", exception);
 			}
 		}
+
+		/// <summary>
+		/// Clone object useing XML-serilization in memory stream
+		/// </summary>
+		/// <param name="data"></param>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public static T CloneObject<T>(T data) {
+			var serilizer = new SharpSerializer();
+			using (var stream = new MemoryStream()) {
+				serilizer.Serialize(data, stream);
+				stream.Position = 0;
+				var copy = (T)serilizer.Deserialize(stream);
+				return copy;
+			}
+		}
 	}
 }
