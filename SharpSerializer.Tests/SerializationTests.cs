@@ -242,16 +242,19 @@ namespace Serialization
 
 			Assert.AreEqual(Color.Black, deserializedObject.ColorByName);
 			Assert.AreEqual(Color.FromArgb(17, 158, 218), deserializedObject.ColorFromArgb);
+			Assert.AreEqual(Color.FromArgb(50, 17, 158, 218), deserializedObject.ColorFromArgb2);
 	    }
 
 		public class TestClass {
 			public TestClass() {
 				ColorByName = Color.Black;
 				ColorFromArgb = Color.FromArgb(17, 158, 218);
+				ColorFromArgb2 = Color.FromArgb(50, 17, 158, 218);
 			}
 
 			public Color ColorByName { get; set; }
 			public Color ColorFromArgb { get; set; }
+			public Color ColorFromArgb2 { get; set; }
 		}
 
 	    #endregion

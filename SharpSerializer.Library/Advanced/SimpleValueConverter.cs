@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Serialization.Advanced.Serializing;
 using Serialization.Advanced.Xml;
 using Serialization.Core;
@@ -60,7 +61,12 @@ namespace Serialization.Advanced
             if (value == null) return string.Empty;
 
 			if (value is Color) {
-				return ColorTranslator.ToHtml((Color)value);
+				//return ColorTranslator.ToHtml((Color)value);
+				var color = (Color) value;
+				if (color.IsKnownColor || color.IsNamedColor) {
+					return ColorTranslator.ToHtml(color);
+				}
+				return string.Format("{0};{1};{2};{3}", (int)color.A, (int)color.R, (int)color.G, (int)color.B);
 			}
 
             // Array of byte
@@ -91,6 +97,16 @@ namespace Serialization.Advanced
             try
             {
 				if (type == typeof(Color)) {
+					var match = Regex.Match(text, @"(?<A>\d*);(?<R>\d*);(?<G>\d*);(?<B>\d*)");
+					if (match.Success) {
+						var a = int.Parse(match.Groups["A"].Value);
+						var r = int.Parse(match.Groups["R"].Value);
+						var g = int.Parse(match.Groups["G"].Value);
+						var b = int.Parse(match.Groups["B"].Value);
+
+						return Color.FromArgb(a, r, g, b);
+					}
+
 					return ColorTranslator.FromHtml(text);
 				}
                 if (type == typeof (string)) return text;
